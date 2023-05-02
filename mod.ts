@@ -62,17 +62,17 @@ const download = async (
   const url =
     `https://github.com/plantuml/plantuml/releases/download/${version}/plantuml.jar`;
 
-  console.log(`Downloading ${url}...`);
-
-  if (!(await fs.exists(path.dirname(dest)))) {
-    await Deno.mkdir(path.dirname(dest), { recursive: true });
-  }
-
   if (
     await fs.exists(dest) &&
     hash && await checksum(await Deno.readFile(dest), hash)
   ) {
     return;
+  }
+
+  console.log(`Downloading ${url}...`);
+
+  if (!(await fs.exists(path.dirname(dest)))) {
+    await Deno.mkdir(path.dirname(dest), { recursive: true });
   }
 
   const blob = await (await fetch(url)).blob();
@@ -135,7 +135,17 @@ const getCacheFilename = async (
   input: Parameters<typeof umlToSvg>,
   cacheDir: string,
 ) => {
-  const hash = await sha256(new TextEncoder().encode(JSON.stringify(input)));
+  const value = {
+    jar: await fs.exists(input[0])
+      ? sha256(await Deno.readFile(input[0]))
+      : undefined,
+    uml: input[1],
+    config: typeof input[2] === "string" && await fs.exists(input[2])
+      ? await sha256(await Deno.readFile(input[2]))
+      : undefined,
+  };
+
+  const hash = await sha256(new TextEncoder().encode(JSON.stringify(value)));
 
   return path.join(
     cacheDir,
