@@ -62,17 +62,17 @@ const download = async (
   const url =
     `https://github.com/plantuml/plantuml/releases/download/${version}/plantuml.jar`;
 
-  console.log(`Downloading ${url}...`);
-
-  if (!(await fs.exists(path.dirname(dest)))) {
-    await Deno.mkdir(path.dirname(dest), { recursive: true });
-  }
-
   if (
     await fs.exists(dest) &&
     hash && await checksum(await Deno.readFile(dest), hash)
   ) {
     return;
+  }
+
+  console.log(`Downloading ${url}...`);
+
+  if (!(await fs.exists(path.dirname(dest)))) {
+    await Deno.mkdir(path.dirname(dest), { recursive: true });
   }
 
   const blob = await (await fetch(url)).blob();
