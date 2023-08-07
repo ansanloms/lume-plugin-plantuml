@@ -1,14 +1,7 @@
 {
   "lint": {
-    "exclude": [
-      "README.md",
-      "demo/"
-    ]
   },
   "fmt": {
-    "exclude": [
-      "README.md",
-      "demo/"
-    ]
+    "proseWrap": "preserve"
   }
 }
