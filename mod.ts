@@ -36,6 +36,11 @@ export interface Options {
   cssSelector: string;
 
   /**
+   * Max generate count.
+   */
+  works: number;
+
+  /**
    * Generate UML.
    */
   generate: (page: Page, uml: string, options: Options) => Promise<HTMLElement>;
@@ -181,6 +186,7 @@ const setOutputToCache = async (
 export const defaults: Options = {
   extensions: [".html"],
   cssSelector: "pre > code.language-plantuml",
+  works: 10,
   generate: async (page, uml, options) => {
     const div = page.document!.createElement("div");
     div.classList.add("plantuml");
@@ -214,21 +220,25 @@ export const defaults: Options = {
   },
 };
 
-const replaceUml = async (page: Page, options: Options) => {
-  const elements = [
-    ...(page.document?.querySelectorAll(options.cssSelector) ||
+const getUmlElemetns = (page: Page, cssSelector: string) => {
+  return [
+    ...(page.document?.querySelectorAll(cssSelector) ||
       []),
   ];
+};
 
-  await Promise.all(elements.map(async (element) => {
-    const uml = await options.generate(
-      page,
-      element.textContent.trim(),
-      options,
-    );
+const replaceUml = async (page: Page, options: Options) => {
+  await Promise.all(
+    getUmlElemetns(page, options.cssSelector).map(async (element) => {
+      const uml = await options.generate(
+        page,
+        element.textContent.trim(),
+        options,
+      );
 
-    element.replaceWith(uml);
-  }));
+      element.replaceWith(uml);
+    }),
+  );
 };
 
 export default function (userOptions?: Partial<Options>) {
@@ -242,8 +252,27 @@ export default function (userOptions?: Partial<Options>) {
     });
 
     site.processAll(options.extensions, async (pages) => {
+      const stocks: (() => Promise<void>)[] = [];
+
       for (const page of pages) {
-        await replaceUml(page, options);
+        if (getUmlElemetns(page, options.cssSelector).length <= 0) {
+          continue;
+        }
+
+        stocks.push(async () => {
+          await replaceUml(page, options);
+          console.log(`UML generated: ${page.src.path}`);
+        });
+
+        if (stocks.length >= options.works) {
+          await Promise.all(stocks.map((v) => v()));
+          stocks.splice(0, stocks.length);
+        }
+      }
+
+      if (stocks.length >= 0) {
+        await Promise.all(stocks.map((v) => v()));
+        stocks.splice(0, stocks.length);
       }
     });
   };
