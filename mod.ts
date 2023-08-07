@@ -214,6 +214,23 @@ export const defaults: Options = {
   },
 };
 
+const replaceUml = async (page: Page, options: Options) => {
+  const elements = [
+    ...(page.document?.querySelectorAll(options.cssSelector) ||
+      []),
+  ];
+
+  await Promise.all(elements.map(async (element) => {
+    const uml = await options.generate(
+      page,
+      element.textContent.trim(),
+      options,
+    );
+
+    element.replaceWith(uml);
+  }));
+};
+
 export default function (userOptions?: Partial<Options>) {
   const options = merge(defaults, userOptions);
 
@@ -224,20 +241,10 @@ export default function (userOptions?: Partial<Options>) {
       }
     });
 
-    site.process(options.extensions, async (page) => {
-      const elements = [
-        ...(page.document?.querySelectorAll(options.cssSelector) ||
-          []),
-      ];
-
-      await Promise.all(elements.map(async (element) => {
-        const uml = await options.generate(
-          page,
-          element.textContent.trim(),
-          options,
-        );
-        element.replaceWith(uml);
-      }));
+    site.processAll(options.extensions, async (pages) => {
+      for (const page of pages) {
+        await replaceUml(page, options);
+      }
     });
   };
 }
