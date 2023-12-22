@@ -1,4 +1,4 @@
-import { merge } from "lume/core/utils.ts";
+import { mergeData } from "lume/core/utils/merge_data.ts";
 import type { Page, Site } from "lume/core.ts";
 
 import * as path from "./deps/std/path/mod.ts";
@@ -242,7 +242,7 @@ const replaceUml = async (page: Page, options: Options) => {
 };
 
 export default function (userOptions?: Partial<Options>) {
-  const options = merge(defaults, userOptions);
+  const options = mergeData(defaults, userOptions);
 
   return (site: Site) => {
     site.addEventListener("beforeBuild", async () => {
@@ -251,7 +251,7 @@ export default function (userOptions?: Partial<Options>) {
       }
     });
 
-    site.processAll(options.extensions, async (pages) => {
+    site.process(options.extensions, async (pages) => {
       const stocks: (() => Promise<void>)[] = [];
 
       for (const page of pages) {
