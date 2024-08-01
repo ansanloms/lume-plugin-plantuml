@@ -1,9 +1,9 @@
 import { mergeData } from "lume/core/utils/merge_data.ts";
 import type { Page, Site } from "lume/core.ts";
 
-import * as path from "./deps/std/path/mod.ts";
-import * as fs from "./deps/std/fs/mod.ts";
-import { crypto } from "./deps/std/crypto/mod.ts";
+import * as path from "./deps/@std/path/mod.ts";
+import * as fs from "./deps/@std/fs/mod.ts";
+import { crypto } from "./deps/@std/crypto/mod.ts";
 
 export interface Options {
   /**
@@ -247,7 +247,7 @@ export default function (userOptions?: Partial<Options>) {
   return (site: Site) => {
     site.addEventListener("beforeBuild", async () => {
       if (options.binary) {
-        const binary = await download(options.binary);
+        await download(options.binary);
       }
     });
 

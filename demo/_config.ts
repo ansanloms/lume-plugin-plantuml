@@ -5,10 +5,10 @@ import plantuml from "../mod.ts";
 const site = lume();
 site.use(plantuml({
   binary: {
-    version: "v1.2023.6",
+    version: "v1.2024.6",
     dest: "./_bin/plantuml.jar",
     checksum:
-      "bf2dee10750fd1794ad9eac7de020064d113838ec169448a16b639dbfb67617d",
+      "5a8dc3b37fe133a4744e55be80caf6080a70350aba716d95400a0f0cbd79e846",
   },
   config: "./plantuml.conf",
   cacheDir: "_cache/plantuml",
