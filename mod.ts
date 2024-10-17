@@ -1,5 +1,5 @@
-import { mergeData } from "lume/core/utils/merge_data.ts";
-import type { Page, Site } from "lume/core.ts";
+import type { Page } from "lume/core/file.ts";
+import type Site from "lume/core/site.ts";
 
 import * as path from "./deps/@std/path/mod.ts";
 import * as fs from "./deps/@std/fs/mod.ts";
@@ -137,16 +137,16 @@ const getOutput = async (
 };
 
 const getCacheFilename = async (
-  input: Parameters<typeof umlToSvg>,
+  [jarPath, uml, config]: Parameters<typeof umlToSvg>,
   cacheDir: string,
 ) => {
   const value = {
-    jar: await fs.exists(input[0])
-      ? sha256(await Deno.readFile(input[0]))
+    jar: await fs.exists(jarPath)
+      ? sha256(await Deno.readFile(jarPath))
       : undefined,
-    uml: input[1],
-    config: typeof input[2] === "string" && await fs.exists(input[2])
-      ? await sha256(await Deno.readFile(input[2]))
+    uml,
+    config: typeof config === "string" && await fs.exists(config)
+      ? await sha256(await Deno.readFile(config))
       : undefined,
   };
 
@@ -232,7 +232,7 @@ const replaceUml = async (page: Page, options: Options) => {
     getUmlElemetns(page, options.cssSelector).map(async (element) => {
       const uml = await options.generate(
         page,
-        element.textContent.trim(),
+        element.textContent?.trim() ?? "",
         options,
       );
 
@@ -242,7 +242,10 @@ const replaceUml = async (page: Page, options: Options) => {
 };
 
 export default function (userOptions?: Partial<Options>) {
-  const options = mergeData(defaults, userOptions);
+  const options = Object.assign<Options, Partial<Options>>(
+    defaults,
+    userOptions ?? {},
+  );
 
   return (site: Site) => {
     site.addEventListener("beforeBuild", async () => {
