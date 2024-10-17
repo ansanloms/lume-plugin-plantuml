@@ -1,5 +1,5 @@
 {
-  "lint": {},
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
   "fmt": {
     "proseWrap": "preserve"
   },
@@ -9,7 +9,7 @@
     "serve": "deno task lume -s"
   },
   "imports": {
-    "lume/": "https://deno.land/x/lume@v2.2.4/"
+    "lume/": "https://deno.land/x/lume@v2.3.3/"
   },
   "compilerOptions": {
     "types": [
